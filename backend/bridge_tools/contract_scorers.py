@@ -39,61 +39,52 @@ LOSERS = {
 
 
 class SingleDealScorer:
-    def __init__(self, parsed_contract: ContractParser):
-        self._contract = parsed_contract
-        self.results = self._get_result()
+    @classmethod
+    def get_result(cls, contract: ContractParser):
+        if contract.is_won:
+            return cls._handle_won(contract)
+        return cls._handle_lost(contract)
 
-    def _get_result(self):
-        if self._contract.is_won:
-            return self._handle_won()
-        return self._handle_lost()
+    @staticmethod
+    def _handle_won(contract: ContractParser) -> dict[str: int]:
+        score = SCORES.get(contract.suit)[contract.level]
 
-    def _handle_won(self) -> dict[str: int]:
-        score = SCORES.get(self._contract.suit)[self._contract.level]
-
-        if self._contract.double == "X":
+        if contract.double == "X":
             score *= 2
-        elif self._contract.double == "XX":
+        elif contract.double == "XX":
             score *= 4
 
         if score < 100:
             score += 50
         else:
-            if self._contract.vulnerability:
+            if contract.vulnerability:
                 score += 500
             else:
                 score += 300
 
-        if self._contract.level == 6:
-            score += 750 if self._contract.vulnerability else 500
-        if self._contract.level == 7:
-            score += 1500 if self._contract.vulnerability else 1000
+        if contract.level == 6:
+            score += 750 if contract.vulnerability else 500
+        if contract.level == 7:
+            score += 1500 if contract.vulnerability else 1000
 
-        if self._contract.double in {"X", "XX"}:
-            vul_multiplier = 2 if self._contract.vulnerability else 1
+        if contract.double in {"X", "XX"}:
+            vul_multiplier = 2 if contract.vulnerability else 1
             score += vul_multiplier * EXTRA[
-                self._contract.double] * self._contract.extra
-            score += 50 if self._contract.double == "X" else 100
+                contract.double] * contract.extra
+            score += 50 if contract.double == "X" else 100
         else:
-            score += EXTRA[self._contract.suit] * self._contract.extra
+            score += EXTRA[contract.suit] * contract.extra
 
-        if self._contract.by in {"N", "S"}:
+        if contract.by in {"N", "S"}:
             return {"score": score}
         return {"score": -score}
 
-    def _handle_lost(self):
-        vul_status = "vul" if self._contract.vulnerability else "normal"
-        losers = self._contract.extra
-        score = LOSERS.get(vul_status).get(self._contract.double)[losers]
+    @staticmethod
+    def _handle_lost(contract: ContractParser):
+        vul_status = "vul" if contract.vulnerability else "normal"
+        losers = contract.extra
+        score = LOSERS.get(vul_status).get(contract.double)[losers]
 
-        if self._contract.by in {"N", "S"}:
+        if contract.by in {"N", "S"}:
             return {"score": -score}
         return {"score": score}
-
-    @property
-    def updated_score(self):
-        return {
-            **self.results,
-            "by": self._contract.by,
-            "contract": self._contract.contract
-        }
