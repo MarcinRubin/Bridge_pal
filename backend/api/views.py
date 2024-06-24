@@ -34,8 +34,8 @@ class ScoreViewSet(UpdateModelMixin, ListModelMixin, RetrieveModelMixin,
         parser = ContractParser(request.data.get("score"), instance.deal.vul)
         parser.is_valid(raise_exception=True)
 
-        single_score = SingleDealScorer(parser)
-        serializer = self.get_serializer(instance, data=single_score.updated_score,
+        # score = SingleDealScorer(parser)
+        serializer = self.get_serializer(instance, data=score,
                                          partial=True)
         serializer.is_valid(raise_exception=True)
         updated_instance = serializer.save()

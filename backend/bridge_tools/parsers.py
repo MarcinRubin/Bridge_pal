@@ -122,6 +122,3 @@ class ContractParser:
     @property
     def vulnerability(self) -> bool:
         return VULNERABILITY[self._vulnerability][self.by]
-
-parser = ContractParser("3nt=n", "Asfdsf")
-print(parser.is_valid())
