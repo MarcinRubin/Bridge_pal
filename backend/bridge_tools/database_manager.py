@@ -2,6 +2,7 @@ from api.models import Player, Deal, Pairing, Score, Table, Game
 from django.conf import settings
 import sqlite3
 from bridge_movements.movement_loader import MovementLoader
+from bridge_tools.game import GameCreator
 from django.db import transaction
 
 
@@ -29,10 +30,11 @@ class DatabaseManager:
 
     @staticmethod
     @transaction.atomic
-    def create_game(movement: MovementLoader, game: Game) -> None:
-        players = DatabaseManager._create_players(movement, game)
-        deals = DatabaseManager._create_deals(movement, game)
-        DatabaseManager._create_all_scores_and_tables(movement, players, deals, game)
+    def create_game(game: GameCreator) -> None:
+        players = DatabaseManager._create_players(game.movement, game.game)
+        deals = DatabaseManager._create_deals(game.movement, game.game)
+        DatabaseManager._create_all_scores_and_tables(game.movement, players, deals,
+                                                      game.game)
 
     @staticmethod
     def _create_players(movement: MovementLoader, game: Game) -> list[Player]:
@@ -61,7 +63,7 @@ class DatabaseManager:
     def _create_all_scores_and_tables(movement: MovementLoader, players: list[Player],
                            deals: list[Deal], game: Game) -> None:
         for table_name in movement.movement:
-            table = Table(name=table_name, round=0)
+            table = Table(game=game, table_number=table_name, actual_round=0)
             table.save()
             player_list = [pl['players'] for pl in movement.movement[
                 table_name]]
@@ -71,7 +73,6 @@ class DatabaseManager:
             for (n_round, n_players, n_deals) in zip(n_items, player_list,
                                                      deals_list):
                 pair = Pairing(
-                    game=game,
                     round_number=n_round,
                     table=table,
                     n=players[n_players[0] - 1],
@@ -82,6 +83,7 @@ class DatabaseManager:
                 pair.save()
                 scores = [
                     Score(
+                        game=game,
                         deal=deals[deal - 1],
                         pairing=pair
                     )

@@ -25,6 +25,8 @@ SECRET_KEY = 'django-insecure-g4(m10sfwimv-me^4h6i7^h-3y0mk=p!(!m=yb&=ngd)i3)xf$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+AUTH_USER_MODEL = "users.User"
+
 ALLOWED_HOSTS = []
 
 
@@ -87,6 +89,15 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
 
 

@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from users.models import User
 
 GAME_TYPES = [
     ("IND", "Individual Tournament"),
@@ -27,6 +28,7 @@ class Movement(models.Model):
 
 
 class Game(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="games")
     name = models.TextField(max_length=100)
     date = models.DateTimeField(default=datetime.now)
     movement = models.ForeignKey(Movement, on_delete=models.CASCADE,
@@ -37,7 +39,7 @@ class Game(models.Model):
 
 
 class Table(models.Model):
-    table_number = models.IntegerField
+    table_number = models.IntegerField()
     #table_user = models.ForeignKey(User....)
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="tables")
     actual_round = models.IntegerField()
