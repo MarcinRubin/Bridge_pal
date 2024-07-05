@@ -43,19 +43,18 @@ class MovementSerializer(serializers.ModelSerializer):
 
 class GameSerializer(serializers.ModelSerializer):
     movement = MovementSerializer(read_only=True)
+
     class Meta:
         model = Game
-        fields = "__all__"
+        exclude = ("owner",)
 
 
 class GameSerializerCreate(GameSerializer):
+    movement = serializers.PrimaryKeyRelatedField(queryset=Movement.objects.all())
 
-    def create(self, validated_data):
-        game_instance = super().create(validated_data)
-        movement_data = MovementSerializer(game_instance.movement).data
-        new_game = GameCreator(game_instance, movement_data)
-        new_game.create()
-        return game_instance
+    class Meta:
+        model = Game
+        exclude = ("date", "owner")
 
 
 class GameSerializerLoadAll(GameSerializer):
